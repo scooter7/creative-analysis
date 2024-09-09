@@ -24,7 +24,7 @@ openai.api_key = st.secrets["openai_api_key"]
 # OpenAI invocation function
 def invoke_model(messages, max_tokens, temperature, top_p, top_k):
     try:
-        response = openai.ChatCompletion.create(
+        response = openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=messages,
             max_tokens=max_tokens,
