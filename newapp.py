@@ -24,7 +24,7 @@ openai.api_key = st.secrets["openai_api_key"]
 # OpenAI invocation function
 def invoke_model(messages, max_tokens, temperature, top_p, top_k):
     try:
-        response = openai.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
             messages=messages,
             max_tokens=max_tokens,
@@ -32,8 +32,8 @@ def invoke_model(messages, max_tokens, temperature, top_p, top_k):
             top_p=top_p,
             n=1
         )
-        # Fetching the content from the response correctly
-        return response.choices[0].message["content"]
+        # Correctly access the message content from the response
+        return response['choices'][0]['message']['content']
     except Exception as e:
         logger.error(f"Error invoking model: {str(e)}")
         st.error(f"An error occurred during model invocation: {str(e)}")
