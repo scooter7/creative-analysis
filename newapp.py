@@ -32,7 +32,8 @@ def invoke_model(messages, max_tokens, temperature, top_p, top_k):
             top_p=top_p,
             n=1
         )
-        return response['choices'][0]['message']['content']
+        # Fetching the content from the response correctly
+        return response.choices[0].message["content"]
     except Exception as e:
         logger.error(f"Error invoking model: {str(e)}")
         st.error(f"An error occurred during model invocation: {str(e)}")
