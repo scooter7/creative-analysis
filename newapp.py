@@ -7,7 +7,6 @@ from tempfile import NamedTemporaryFile
 
 import openai
 import pymupdf
-import pyperclip
 import streamlit as st
 from PIL import Image
 
@@ -182,8 +181,7 @@ def main():
                 st.session_state.analysis_time = (
                     end_time - start_time
                 ).total_seconds()
-                pyperclip.copy(analysis)
-                st.success("Analysis copied to clipboard!")
+                st.success("Analysis completed successfully!")
             else:
                 st.error("An error occurred during the analysis")
 
