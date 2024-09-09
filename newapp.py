@@ -27,7 +27,7 @@ def invoke_model_with_chunking(text_chunks, prompt_base, max_tokens=500):
     for chunk in text_chunks:
         prompt_text = prompt_base + chunk
         try:
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt_text}],
                 max_tokens=max_tokens
