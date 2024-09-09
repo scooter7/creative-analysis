@@ -1,6 +1,5 @@
 import base64
 import datetime
-import json
 import logging
 from io import StringIO
 from pathlib import Path
@@ -21,22 +20,28 @@ logging.basicConfig(
 # Initialize OpenAI using API key from Streamlit secrets
 openai.api_key = st.secrets["openai_api_key"]
 
-# OpenAI invocation function
-def invoke_model(messages, max_tokens, temperature, top_p):
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4-0613",  # Update to the appropriate model
-            messages=messages,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p
-        )
-        # Correctly access the message content from the response
-        return response.choices[0].message['content']
-    except Exception as e:
-        logger.error(f"Error invoking model: {str(e)}")
-        st.error(f"An error occurred during model invocation: {str(e)}")
-        return None
+# Function to invoke the model using chunked data
+def invoke_model_with_chunking(text_chunks, prompt_base, max_tokens=500):
+    detailed_responses = []
+    
+    for chunk in text_chunks:
+        prompt_text = prompt_base + chunk
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt_text}],
+                max_tokens=max_tokens
+            )
+            detailed_responses.append(response.choices[0].message['content'])
+        except Exception as e:
+            logger.error(f"Error invoking model: {str(e)}")
+            st.error(f"An error occurred during model invocation: {str(e)}")
+    
+    return "\n".join(detailed_responses)
+
+# Function to split the text into smaller chunks (this can be customized)
+def split_text_into_chunks(text, chunk_size=1000):
+    return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
 
 # Function to compose message for OpenAI
 def compose_message(user_prompt, file_paths):
@@ -162,26 +167,24 @@ def main():
 
         with st.spinner(text="Analyzing..."):
             start_time = datetime.datetime.now()
-            messages = compose_message(st.session_state.user_prompt, file_paths)
-            if messages:
-                response = invoke_model(
-                    messages,
-                    st.session_state.max_tokens,
-                    st.session_state.temperature,
-                    st.session_state.top_p,
+
+            # Split text into chunks and invoke model with chunking
+            text_chunks = split_text_into_chunks(st.session_state.user_prompt)
+            response = invoke_model_with_chunking(text_chunks, st.session_state.system_prompt)
+
+            end_time = datetime.datetime.now()
+
+            if response:
+                analysis = st.text_area(
+                    "Model Response:", value=response, height=800
                 )
-                end_time = datetime.datetime.now()
-                if response:
-                    analysis = st.text_area(
-                        "Model Response:", value=response, height=800
-                    )
-                    st.session_state.analysis_time = (
-                        end_time - start_time
-                    ).total_seconds()
-                    pyperclip.copy(analysis)
-                    st.success("Analysis copied to clipboard!")
-                else:
-                    st.error("An error occurred during the analysis")
+                st.session_state.analysis_time = (
+                    end_time - start_time
+                ).total_seconds()
+                pyperclip.copy(analysis)
+                st.success("Analysis copied to clipboard!")
+            else:
+                st.error("An error occurred during the analysis")
 
     st.markdown(
         "<small style='color: #888888'> Gary A. Stafford, 2024</small>",
