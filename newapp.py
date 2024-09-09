@@ -22,18 +22,17 @@ logging.basicConfig(
 openai.api_key = st.secrets["openai_api_key"]
 
 # OpenAI invocation function
-def invoke_model(messages, max_tokens, temperature, top_p, top_k):
+def invoke_model(messages, max_tokens, temperature, top_p):
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
+            model="gpt-4-0613",  # Update to the appropriate model
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
-            top_p=top_p,
-            n=1
+            top_p=top_p
         )
         # Correctly access the message content from the response
-        return response['choices'][0]['message']['content']
+        return response.choices[0].message['content']
     except Exception as e:
         logger.error(f"Error invoking model: {str(e)}")
         st.error(f"An error occurred during model invocation: {str(e)}")
@@ -96,7 +95,6 @@ def main():
         "max_tokens": 1000,
         "temperature": 1.0,
         "top_p": 0.999,
-        "top_k": 250,
         "media_type": None,
     }
 
@@ -171,7 +169,6 @@ def main():
                     st.session_state.max_tokens,
                     st.session_state.temperature,
                     st.session_state.top_p,
-                    st.session_state.top_k,
                 )
                 end_time = datetime.datetime.now()
                 if response:
