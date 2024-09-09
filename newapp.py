@@ -27,13 +27,13 @@ def invoke_model_with_chunking(text_chunks, prompt_base, max_tokens=500):
     for chunk in text_chunks:
         prompt_text = prompt_base + chunk
         try:
-            response = openai.chat.completions.create(
+            response = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt_text}],
                 max_tokens=max_tokens
             )
             # Corrected access to response content
-            detailed_responses.append(response['choices'][0]['message']['content'])
+            detailed_responses.append(response.choices[0].message.content)
         except Exception as e:
             logger.error(f"Error invoking model: {str(e)}")
             st.error(f"An error occurred during model invocation: {str(e)}")
